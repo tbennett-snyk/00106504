@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Prevent the following warning on .NET 8 SDK by preserving legacy behavior for
+       transitive dependencies that use distribution-specific runtime identifiers. This can
+       be removed in the future once we update our NuGet references, and once transitive
+       dependencies (such as Microsoft.Management.Infrastructure.Runtime.Win below) no longer
+       use distribution-specific runtime identifiers.
+
+       NETSDK1206: Found version-specific or distribution-specific runtime identifier(s):
+       win10-x64, win10-x86, win7-x64, win7-x86, win81-x64, win81-x86, win8-x64, win8-x86.
+       Affected libraries: Microsoft.Management.Infrastructure.Runtime.Win. In .NET 8.0 and
+       higher, assets for version-specific and distribution-specific runtime identifiers will
+       not be found by default. See https://aka.ms/dotnet/rid-usage for details. -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Runtime.Loader.UseRidGraph" Value="true" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <Authors>SkyKick</Authors>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <Company>SkyKick</Company>
+    <DebugType>embedded</DebugType>
+    <DockerComposeProjectPath>$(DirectoryBuildPropsPath.Replace('Directory.Build.props', ''))\docker-compose.dcproj</DockerComposeProjectPath>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>$(DirectoryBuildPropsPath.Replace('Directory.Build.props', ''))</DockerfileContext>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableDynamicNativeInstrumentation>false</EnableDynamicNativeInstrumentation>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnableStaticNativeInstrumentation>false</EnableStaticNativeInstrumentation>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+    <IsPackable>false</IsPackable>
+    <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RunAnalyzers>true</RunAnalyzers>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
+    <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Do not treat packages with vulnerabilities as errors (https://learn.microsoft.com/en-us/nuget/reference/errors-and-warnings/NU1901-NU1904) -->
+    <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
+
+    <!-- Make internals visible to projects that are directly testing that project (ex. SkyKick.Platform.DependencyInterrogation.Infrastructure.Tests) -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>$(AssemblyName).Test</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>$(AssemblyName).Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
+    </AssemblyAttribute>
+
+    <!-- Finds the last period and deletes it and everything after it -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1 Condition="$([System.String]::Copy($(AssemblyName)).LastIndexOf('.')) > 0">
+        $([System.String]::Copy($(AssemblyName)).Substring(0, $([System.String]::Copy($(AssemblyName)).LastIndexOf('.')))).Test
+      </_Parameter1>
+      <_Parameter1 Condition="$([System.String]::Copy($(AssemblyName)).LastIndexOf('.')) == -1">
+        $(AssemblyName).Test
+      </_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1 Condition="$([System.String]::Copy($(AssemblyName)).LastIndexOf('.')) > 0">
+        $([System.String]::Copy($(AssemblyName)).Substring(0, $([System.String]::Copy($(AssemblyName)).LastIndexOf('.')))).Tests
+      </_Parameter1>
+      <_Parameter1 Condition="$([System.String]::Copy($(AssemblyName)).LastIndexOf('.')) == -1">
+        $(AssemblyName).Tests
+      </_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'!='Release'">
+    <PackageReference Include="AsyncFixer">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Meziantou.Analyzer">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.Compilers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Roslynator.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SecurityCodeScan.VS2019">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="$(MSBuildProjectName.Contains('Test')) AND '$(MSBuildProjectExtension)' == '.csproj'">
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="Moq" />
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+  </ItemGroup>
+
+  <ItemGroup Condition="($(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('Test')) OR $(MSBuildProjectName.EndsWith('Scenarios'))) AND '$(MSBuildProjectExtension)' == '.csproj'">
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.CodeCoverage" />
+    <PackageReference Include="NUnit3TestAdapter">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Shouldly" />
+  </ItemGroup>
+</Project>
